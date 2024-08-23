@@ -1,0 +1,9 @@
+[package]
+name = "typewriter"
+version = "0.1.0"
+authors = ["Ethan Muller <ethanbmuller@gmail.com>"]
+license = "MIT"
+edition = "2021"
+
+[dependencies]
+ratatui = "0.27.0"

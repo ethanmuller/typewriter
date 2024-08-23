@@ -1,4 +1,4 @@
-use std::{char, error};
+use std::{char, error, time::{Duration, Instant}};
 
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -10,18 +10,22 @@ const MAX_LINE_LENGTH: usize = 32;
 pub struct App {
     /// Is the application running?
     pub running: bool,
-    pub one: String,
-    pub two: String,
-    pub three: String,
+    pub input: String,
+    pub printed: String,
+    pub history: String,
+    pub show_hint: bool,
+    pub last_keystroke: Instant,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
             running: true,
-            one: String::new(),
-            two: String::new(),
-            three: String::new(),
+            input: String::new(),
+            printed: String::new(),
+            history: String::new(),
+            show_hint: true,
+            last_keystroke: Instant::now(),
         }
     }
 }
@@ -53,23 +57,36 @@ impl App {
     }
 
     /// Handles the tick event of the terminal.
-    pub fn tick(&self) {}
+    pub fn tick(&mut self) {
+        if self.time_since_last_keystroke() > Duration::from_secs(5) {
+            self.show_hint = true
+        }
+    }
 
+    pub fn newline(&mut self) {
+        self.history = self.printed.clone();
+        self.printed = self.input.clone();
+        self.input = String::from("");
+    }
 
     pub fn add_character(&mut self, char: char) {
-        // Append the new character to the `self.one`
-        self.one.push(char);
+        // Append the new character to the `self.input`
+        self.input.push(char);
 
         // Check if the length exceeds or equals the max limit
-        if self.one.len() > MAX_LINE_LENGTH {
+        if self.input.len() > MAX_LINE_LENGTH {
             // Perform word wrapping
-            let (line_to_print, wrapped_word) = word_wrap(&self.one);
+            let (line_to_print, wrapped_word) = word_wrap(&self.input);
 
             // Shift the lines and update accordingly
-            self.three = self.two.clone();
-            self.two = line_to_print.trim_end().to_string();  // Trim any trailing spaces for clean line ends
-            self.one = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
+            self.history = self.printed.clone();
+            self.printed = line_to_print.trim_end().to_string();  // Trim any trailing spaces for clean line ends
+            self.input = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
         }
+    }
+
+    pub fn time_since_last_keystroke(&self) -> std::time::Duration {
+        self.last_keystroke.elapsed() // Calculate the time elapsed since the last keystroke
     }
 
     /// Set running to false to quit the application.
@@ -119,7 +136,7 @@ mod tests {
         app.add_character('t');
         app.add_character('t');
 
-        assert_eq!(app.one, "ttt");
+        assert_eq!(app.input, "ttt");
     }
 
     #[test]
@@ -157,7 +174,7 @@ mod tests {
         app.add_character(' ');
         app.add_character('g');
         app.add_character('e');
-        assert_eq!(app.one, "this is a long line that will ge");
+        assert_eq!(app.input, "this is a long line that will ge");
     }
 
     #[test]
@@ -196,7 +213,49 @@ mod tests {
         app.add_character('g');
         app.add_character('e');
         app.add_character('t');
-        assert_eq!(app.two, "this is a long line that will");
-        assert_eq!(app.one, "get");
+        assert_eq!(app.printed, "this is a long line that will");
+        assert_eq!(app.input, "get");
+    }
+
+    #[ignore]
+    #[test]
+    fn space_after_full_line() {
+        let mut app = App::default();
+        app.add_character('W');
+        app.add_character('e');
+        app.add_character('l');
+        app.add_character('c');
+        app.add_character('o');
+        app.add_character('m');
+        app.add_character('e');
+        app.add_character(' ');
+        app.add_character('t');
+        app.add_character('o');
+        app.add_character(' ');
+        app.add_character('y');
+        app.add_character('o');
+        app.add_character('u');
+        app.add_character('r');
+        app.add_character(' ');
+        app.add_character('n');
+        app.add_character('e');
+        app.add_character('w');
+        app.add_character(' ');
+        app.add_character('t');
+        app.add_character('e');
+        app.add_character('x');
+        app.add_character('t');
+        app.add_character(' ');
+        app.add_character('e');
+        app.add_character('d');
+        app.add_character('i');
+        app.add_character('t');
+        app.add_character('o');
+        app.add_character('r');
+        app.add_character('.');
+        app.add_character(' ');
+             
+        assert_eq!(app.printed, "Welcome to your new text editor.");
+        assert_eq!(app.input, "");
     }
 }

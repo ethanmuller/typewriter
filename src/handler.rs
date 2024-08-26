@@ -12,6 +12,8 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
         }
         KeyCode::Backspace => {
             app.delete_last_character();
+            app.show_hint = false;
+            app.last_keystroke = Instant::now();
         }
         KeyCode::Enter => {
             app.newline();

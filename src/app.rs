@@ -16,21 +16,33 @@ pub struct App {
     pub history: String,
     pub show_hint: bool,
     pub last_keystroke: Instant,
-    printer: Printer<File>,
+    printer: Option<Printer<File>>,
 }
 
 impl Default for App {
-
     fn default() -> Self {
         let args: Vec<String> = env::args().collect();
-        let output_file_path = &args[1];
-        let device_file = File::options()
-            .append(true)
-            .create(true)
-            .open(output_file_path)
-            .unwrap();
-        let mut printer = Printer::new(device_file, None, None);
-        printer.chain_hwinit().unwrap();
+        if args.len() > 1 {
+            let fp = &args[1];
+            let device_file = File::options()
+                .append(true)
+                .create(true)
+                .open(fp)
+                .unwrap();
+
+            let mut printer = Printer::new(device_file, None, None);
+            printer.chain_hwinit().unwrap();
+
+            return Self {
+                running: true,
+                input: String::new(),
+                printed: String::new(),
+                history: String::new(),
+                show_hint: true,
+                last_keystroke: Instant::now(),
+                printer: Some(printer),
+            }
+        }
 
         Self {
             running: true,
@@ -39,7 +51,7 @@ impl Default for App {
             history: String::new(),
             show_hint: true,
             last_keystroke: Instant::now(),
-            printer,
+            printer: None,
         }
     }
 }
@@ -79,12 +91,13 @@ impl App {
 
     pub fn newline(&mut self) {
         self.history = self.printed.clone();
-        // fs::write("/dev/serial0", self.printed.clone()).expect("Unable to print");
         self.printed = self.input.clone();
         self.input = String::from("");
 
-        self.printer.chain_text(&self.printed).unwrap();
-        self.printer.flush().unwrap();
+        if let Some(ref mut printer) = self.printer {
+            printer.chain_text(&self.printed).unwrap();
+            printer.flush().unwrap();
+        }
     }
 
     pub fn add_character(&mut self, char: char) {
@@ -98,14 +111,29 @@ impl App {
 
             // Shift the lines and update accordingly
             self.history = self.printed.clone();
-            // fs::write("/dev/serial0", self.printed.clone()).expect("Unable to print");
             self.printed = line_to_print.trim_end().to_string();  // Trim any trailing spaces for clean line ends
             self.input = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
 
-            self.printer.chain_text(&self.printed).unwrap();
-            self.printer.flush().unwrap();
+            if let Some(ref mut printer) = self.printer {
+                printer.chain_text(&self.printed).unwrap();
+                printer.flush().unwrap();
+            }
+        }
+
+
+    }
+
+    pub fn delete_last_character(&mut self) {
+        if !self.input.is_empty() {
+            self.input = self.input[..self.input.len() - 1].to_string();
         }
     }
+
+    // pub fn delete_last_character(&mut self) {
+    //     if !self.input.is_empty() {
+    //         self.input = self.input[..self.input.len() - 1].to_string();
+    //     }
+    // }
 
     pub fn time_since_last_keystroke(&self) -> std::time::Duration {
         self.last_keystroke.elapsed() // Calculate the time elapsed since the last keystroke
@@ -113,10 +141,12 @@ impl App {
 
     /// Set running to false to quit the application.
     pub fn quit(&mut self) {
-        self.printer.text(&self.input).unwrap();
-        self.printer.chain_feed(1).unwrap();
-        self.printer.chain_cut(false).unwrap();
-        self.printer.flush().unwrap();
+        if let Some(ref mut printer) = self.printer {
+            printer.text(&self.input).unwrap();
+            printer.chain_feed(1).unwrap();
+            printer.chain_cut(false).unwrap();
+            printer.flush().unwrap();
+        }
 
         self.running = false;
     }
@@ -164,6 +194,17 @@ mod tests {
         app.add_character('t');
 
         assert_eq!(app.input, "ttt");
+    }
+
+    #[test]
+    fn can_delete() {
+        let mut app = App::default();
+        app.add_character('a');
+        app.add_character('b');
+        app.add_character('c');
+        app.delete_last_character();
+
+        assert_eq!(app.input, "ab");
     }
 
     #[test]
@@ -285,4 +326,6 @@ mod tests {
         assert_eq!(app.printed, "Welcome to your new text editor.");
         assert_eq!(app.input, "");
     }
+
+
 }

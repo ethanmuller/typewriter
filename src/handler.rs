@@ -10,6 +10,9 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
         KeyCode::Esc => {
             app.quit();
         }
+        KeyCode::Backspace => {
+            app.delete_last_character();
+        }
         KeyCode::Enter => {
             app.newline();
             app.show_hint = false;

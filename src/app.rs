@@ -28,7 +28,7 @@ impl Default for App {
                 .append(true)
                 .create(true)
                 .open(fp)
-                .unwrap();
+                .expect(fp);
 
             let mut printer = Printer::new(device_file, None, None);
             printer.chain_hwinit().unwrap();

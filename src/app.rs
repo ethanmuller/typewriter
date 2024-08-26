@@ -78,6 +78,7 @@ impl App {
         self.input = String::from("");
 
         self.printer.chain_text(&self.printed).unwrap();
+        self.printer.flush().unwrap();
     }
 
     pub fn add_character(&mut self, char: char) {
@@ -96,6 +97,7 @@ impl App {
             self.input = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
 
             self.printer.chain_text(&self.printed).unwrap();
+            self.printer.flush().unwrap();
         }
     }
 

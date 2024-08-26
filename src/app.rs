@@ -129,11 +129,20 @@ impl App {
         }
     }
 
-    // pub fn delete_last_character(&mut self) {
-    //     if !self.input.is_empty() {
-    //         self.input = self.input[..self.input.len() - 1].to_string();
-    //     }
-    // }
+    pub fn clear_input(&mut self) {
+        if !self.input.is_empty() {
+            self.input = "".to_string();
+        }
+    }
+
+    pub fn delete_last_word(&mut self) {
+        let trimmed = self.input.trim_end();
+
+        self.input = match trimmed.rfind(char::is_whitespace) {
+            Some(pos) => trimmed[..pos + 1].to_string(),
+            None => "".to_string(),
+        }
+    }
 
     pub fn time_since_last_keystroke(&self) -> std::time::Duration {
         self.last_keystroke.elapsed() // Calculate the time elapsed since the last keystroke
@@ -197,14 +206,41 @@ mod tests {
     }
 
     #[test]
-    fn can_delete() {
+    fn can_delete_char() {
         let mut app = App::default();
         app.add_character('a');
         app.add_character('b');
         app.add_character('c');
         app.delete_last_character();
+    }
 
-        assert_eq!(app.input, "ab");
+    #[test]
+    fn can_delete_word() {
+        let mut app = App::default();
+        app.add_character('o');
+        app.add_character('n');
+        app.add_character('e');
+        app.add_character(' ');
+        app.add_character('t');
+        app.add_character('w');
+        app.add_character('o');
+        app.delete_last_word();
+        assert_eq!(app.input, "one ");
+    }
+
+    #[test]
+    fn can_delete_word_past_space() {
+        let mut app = App::default();
+        app.add_character('o');
+        app.add_character('n');
+        app.add_character('e');
+        app.add_character(' ');
+        app.add_character('t');
+        app.add_character('w');
+        app.add_character('o');
+        app.add_character(' ');
+        app.delete_last_word();
+        assert_eq!(app.input, "one ");
     }
 
     #[test]

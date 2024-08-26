@@ -1,4 +1,4 @@
-use std::{char, error, time::{Duration, Instant}};
+use std::{char, error, env, time::{Duration, Instant}};
 use std::fs::File;
 use escposify::printer::Printer;
 
@@ -22,7 +22,13 @@ pub struct App {
 impl Default for App {
 
     fn default() -> Self {
-        let device_file = File::options().append(true).open("/dev/serial0").unwrap();
+        let args: Vec<String> = env::args().collect();
+        let output_file_path = &args[1];
+        let device_file = File::options()
+            .append(true)
+            .create(true)
+            .open(output_file_path)
+            .unwrap();
         let mut printer = Printer::new(device_file, None, None);
         printer.chain_hwinit().unwrap();
 

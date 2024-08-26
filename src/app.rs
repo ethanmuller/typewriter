@@ -24,7 +24,7 @@ impl Default for App {
     fn default() -> Self {
         let device_file = File::options().append(true).open("/dev/serial0").unwrap();
         let mut printer = Printer::new(device_file, None, None);
-        printer.chain_size(0,0).unwrap();
+        printer.chain_hwinit().unwrap();
 
         Self {
             running: true,

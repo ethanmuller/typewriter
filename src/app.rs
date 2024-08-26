@@ -1,4 +1,4 @@
-use std::{char, error, fs, time::{Duration, Instant}};
+use std::{char, error, time::{Duration, Instant}};
 
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -58,14 +58,14 @@ impl App {
 
     /// Handles the tick event of the terminal.
     pub fn tick(&mut self) {
-        if self.time_since_last_keystroke() > Duration::from_secs(5) {
+        if self.time_since_last_keystroke() > Duration::from_secs(3) {
             self.show_hint = true
         }
     }
 
     pub fn newline(&mut self) {
         self.history = self.printed.clone();
-        fs::write("/dev/serial0", self.printed.clone()).expect("Unable to print");
+        // fs::write("/dev/serial0", self.printed.clone()).expect("Unable to print");
         self.printed = self.input.clone();
         self.input = String::from("");
     }
@@ -81,7 +81,7 @@ impl App {
 
             // Shift the lines and update accordingly
             self.history = self.printed.clone();
-            fs::write("/dev/serial0", self.printed.clone()).expect("Unable to print");
+            // fs::write("/dev/serial0", self.printed.clone()).expect("Unable to print");
             self.printed = line_to_print.trim_end().to_string();  // Trim any trailing spaces for clean line ends
             self.input = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
         }
@@ -93,7 +93,7 @@ impl App {
 
     /// Set running to false to quit the application.
     pub fn quit(&mut self) {
-        fs::write("/dev/serial0", self.input.clone()).expect("Unable to print");
+        // fs::write("/dev/serial0", self.input.clone()).expect("Unable to print");
         self.running = false;
     }
 }

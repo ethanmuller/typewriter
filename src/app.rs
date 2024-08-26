@@ -1,4 +1,6 @@
 use std::{char, error, time::{Duration, Instant}};
+use std::fs::File;
+use escposify::printer::Printer;
 
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -6,7 +8,6 @@ pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
 const MAX_LINE_LENGTH: usize = 32;
 
 /// Application.
-#[derive(Debug)]
 pub struct App {
     /// Is the application running?
     pub running: bool,
@@ -15,10 +16,16 @@ pub struct App {
     pub history: String,
     pub show_hint: bool,
     pub last_keystroke: Instant,
+    printer: Printer<File>,
 }
 
 impl Default for App {
+
     fn default() -> Self {
+        let device_file = File::options().append(true).open("/dev/serial0").unwrap();
+        let mut printer = Printer::new(device_file, None, None);
+        printer.chain_size(0,0).unwrap();
+
         Self {
             running: true,
             input: String::new(),
@@ -26,6 +33,7 @@ impl Default for App {
             history: String::new(),
             show_hint: true,
             last_keystroke: Instant::now(),
+            printer,
         }
     }
 }
@@ -68,6 +76,8 @@ impl App {
         // fs::write("/dev/serial0", self.printed.clone()).expect("Unable to print");
         self.printed = self.input.clone();
         self.input = String::from("");
+
+        self.printer.chain_text(&self.printed).unwrap();
     }
 
     pub fn add_character(&mut self, char: char) {
@@ -84,6 +94,8 @@ impl App {
             // fs::write("/dev/serial0", self.printed.clone()).expect("Unable to print");
             self.printed = line_to_print.trim_end().to_string();  // Trim any trailing spaces for clean line ends
             self.input = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
+
+            self.printer.chain_text(&self.printed).unwrap();
         }
     }
 
@@ -93,7 +105,11 @@ impl App {
 
     /// Set running to false to quit the application.
     pub fn quit(&mut self) {
-        // fs::write("/dev/serial0", self.input.clone()).expect("Unable to print");
+        self.printer.text(&self.input).unwrap();
+        self.printer.chain_feed(1).unwrap();
+        self.printer.chain_cut(false).unwrap();
+        self.printer.flush().unwrap();
+
         self.running = false;
     }
 }

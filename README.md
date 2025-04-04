@@ -2,7 +2,7 @@
 
 The problem with text editors is that you can edit your text. This allows you to overthink. Sometimes you just want to write to get thoughts out of your head, you know?
 
-This app is a virtual typewriter built for focus and flow. As you write, your text gradually fades out of view. You can delete the last few words, but anything further back is uneditable. A tool for writing, not editing.
+This app is a virtual typewriter built for focus and flow. As you write, your text gradually fades out of view. You can delete the last few words you wrote, but anything further back is uneditable. A tool for writing, not editing.
 
 ```text
 src/

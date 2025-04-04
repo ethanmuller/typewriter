@@ -104,6 +104,10 @@ impl App {
         // Append the new character to the `self.input`
         self.input.push(char);
 
+        self.handle_word_wrapping();
+    }
+
+    pub fn handle_word_wrapping(&mut self) {
         // Check if the length exceeds or equals the max limit
         if self.input.len() > MAX_LINE_LENGTH {
             // Perform word wrapping
@@ -119,8 +123,6 @@ impl App {
                 printer.flush().unwrap();
             }
         }
-
-
     }
 
     pub fn delete_last_character(&mut self) {

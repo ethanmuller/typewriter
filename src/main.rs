@@ -6,7 +6,6 @@ use std::io;
 use std::env;
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
-use std::fs;
 use std::fs::OpenOptions;
 use std::io::Write;
 

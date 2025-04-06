@@ -11,7 +11,8 @@ pub struct App {
     pub running: bool,
     pub input: String,
     pub history: Vec<String>,
-    pub show_hint: bool,
+    pub disable_hints: bool,
+    pub display_hints: bool,
     pub last_keystroke: Instant,
 }
 
@@ -21,7 +22,8 @@ impl Default for App {
             running: true,
             input: String::new(),
             history: Vec::new(),
-            show_hint: true,
+            disable_hints: false,
+            display_hints: true,
             last_keystroke: Instant::now(),
         }
     }
@@ -48,13 +50,17 @@ fn word_wrap(text: &str) -> (String, String) {
 }
 
 impl App {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(disable_hints: bool) -> Self {
+        Self {
+            disable_hints,
+            display_hints: !disable_hints,
+            ..Default::default()
+        }
     }
 
     pub fn tick(&mut self) {
-        if self.time_since_last_keystroke() > Duration::from_secs(3) {
-            self.show_hint = true
+        if !self.disable_hints && self.time_since_last_keystroke() > Duration::from_secs(3) {
+            self.display_hints = true
         }
     }
 

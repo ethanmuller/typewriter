@@ -36,7 +36,7 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         ])
         .split(layout[1]);
 
-    if app.show_hint {
+    if app.display_hints {
         frame.render_widget(
             Paragraph::new("Please write continuously and freely.\nWhen you are done, press ESC to exit.")
             .alignment(Alignment::Left)

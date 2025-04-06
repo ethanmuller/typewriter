@@ -16,12 +16,12 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
             } else {
                 app.delete_last_character();
             }
-            app.show_hint = false;
+            app.display_hints = false;
             app.last_keystroke = Instant::now();
         }
         KeyCode::Enter => {
             app.newline();
-            app.show_hint = false;
+            app.display_hints = false;
             app.last_keystroke = Instant::now();
         }
         KeyCode::Char(c) => {
@@ -34,7 +34,7 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
                 return Ok(())
             }
             app.add_character(c);  // Add character to input buffer
-            app.show_hint = false;
+            app.display_hints = false;
             app.last_keystroke = Instant::now();
         }
         _ => {}

@@ -49,11 +49,11 @@ pub fn render(app: &mut App, frame: &mut Frame) {
         );
     }
 
-    let history = Span::styled(app.history.clone(), Style::default().fg(Color::Gray));
-    let printed = Span::styled(app.printed.clone(), Style::default().fg(Color::DarkGray));
+    let third_line = Span::styled(app.third_line.clone(), Style::default().fg(Color::Gray));
+    let second_line = Span::styled(app.second_line.clone(), Style::default().fg(Color::DarkGray));
     let input = Span::styled(app.input.clone(), Style::default().fg(Color::Black));
 
-    let text: Vec<Line<'_>> = vec![history.into(), printed.into(), input.into()];
+    let text: Vec<Line<'_>> = vec![third_line.into(), second_line.into(), input.into()];
     let widget = Paragraph::new(text)
         .alignment(Alignment::Left)
         .block(Block::default())

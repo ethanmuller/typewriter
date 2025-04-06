@@ -32,5 +32,9 @@ fn main() -> AppResult<()> {
 
     // Exit the user interface.
     tui.exit()?;
+
+    let output = app.history.join("\n");
+    println!("{}", output);
+
     Ok(())
 }

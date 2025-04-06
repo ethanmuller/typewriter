@@ -1,6 +1,5 @@
 use std::{char, error, env, time::{Duration, Instant}};
-use std::fs::File;
-use escposify::printer::Printer;
+use std::io::{self, Write};
 
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -12,46 +11,38 @@ pub struct App {
     /// Is the application running?
     pub running: bool,
     pub input: String,
-    pub printed: String,
-    pub history: String,
+    pub second_line: String,
+    pub third_line: String,
+    pub history: Vec<String>,
     pub show_hint: bool,
     pub last_keystroke: Instant,
-    printer: Option<Printer<File>>,
 }
 
 impl Default for App {
     fn default() -> Self {
         let args: Vec<String> = env::args().collect();
         if args.len() > 1 {
-            let fp = &args[1];
-            let device_file = File::options()
-                .append(true)
-                .create(true)
-                .open(fp)
-                .expect(fp);
-
-            let mut printer = Printer::new(device_file, None, None);
-            printer.chain_hwinit().unwrap();
+            // let file_path = &args[1];
 
             return Self {
                 running: true,
                 input: String::new(),
-                printed: String::new(),
-                history: String::new(),
+                second_line: String::new(),
+                third_line: String::new(),
+                history: Vec::new(),
                 show_hint: true,
                 last_keystroke: Instant::now(),
-                printer: Some(printer),
             }
         }
 
         Self {
             running: true,
             input: String::new(),
-            printed: String::new(),
-            history: String::new(),
+            second_line: String::new(),
+            third_line: String::new(),
+            history: Vec::new(),
             show_hint: true,
             last_keystroke: Instant::now(),
-            printer: None,
         }
     }
 }
@@ -77,12 +68,10 @@ fn word_wrap(text: &str) -> (String, String) {
 }
 
 impl App {
-    /// Constructs a new instance of [`App`].
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Handles the tick event of the terminal.
     pub fn tick(&mut self) {
         if self.time_since_last_keystroke() > Duration::from_secs(3) {
             self.show_hint = true
@@ -90,14 +79,10 @@ impl App {
     }
 
     pub fn newline(&mut self) {
-        self.history = self.printed.clone();
-        self.printed = self.input.clone();
+        self.history.push(self.third_line.clone());
+        self.third_line = self.second_line.clone();
+        self.second_line = self.input.clone();
         self.input = String::from("");
-
-        if let Some(ref mut printer) = self.printer {
-            printer.chain_text(&self.printed).unwrap();
-            printer.flush().unwrap();
-        }
     }
 
     pub fn add_character(&mut self, char: char) {
@@ -110,14 +95,10 @@ impl App {
             let (line_to_print, wrapped_word) = word_wrap(&self.input);
 
             // Shift the lines and update accordingly
-            self.history = self.printed.clone();
-            self.printed = line_to_print.trim_end().to_string();  // Trim any trailing spaces for clean line ends
+            self.history.push(self.third_line.clone());
+            self.third_line = self.second_line.clone();
+            self.second_line = line_to_print.trim_end().to_string();  // Trim any trailing spaces for clean line ends
             self.input = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
-
-            if let Some(ref mut printer) = self.printer {
-                printer.chain_text(&self.printed).unwrap();
-                printer.flush().unwrap();
-            }
         }
 
 
@@ -148,14 +129,10 @@ impl App {
         self.last_keystroke.elapsed() // Calculate the time elapsed since the last keystroke
     }
 
-    /// Set running to false to quit the application.
     pub fn quit(&mut self) {
-        if let Some(ref mut printer) = self.printer {
-            printer.text(&self.input).unwrap();
-            printer.chain_feed(1).unwrap();
-            printer.chain_cut(false).unwrap();
-            printer.flush().unwrap();
-        }
+        self.history.push(self.third_line.clone());
+        self.history.push(self.second_line.clone());
+        self.history.push(self.input.clone());
 
         self.running = false;
     }
@@ -317,7 +294,7 @@ mod tests {
         app.add_character('g');
         app.add_character('e');
         app.add_character('t');
-        assert_eq!(app.printed, "this is a long line that will");
+        assert_eq!(app.second_line, "this is a long line that will");
         assert_eq!(app.input, "get");
     }
 
@@ -359,7 +336,7 @@ mod tests {
         app.add_character('.');
         app.add_character(' ');
              
-        assert_eq!(app.printed, "Welcome to your new text editor.");
+        assert_eq!(app.second_line, "Welcome to your new text editor.");
         assert_eq!(app.input, "");
     }
 

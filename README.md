@@ -4,8 +4,6 @@ The problem with text editors is that you can edit your text. This allows you to
 
 Typewriter is a virtual typewriter built for focus and flow. As you write, your text gradually fades out of view. You can delete the last few words you wrote, but anything further back is uneditable. A tool for writing, not editing.
 
-T
-
 ```text
 src/
 ├── app.rs     -> holds the state and application logic

@@ -1,5 +1,4 @@
-use std::{char, error, env, time::{Duration, Instant}};
-use std::io::{self, Write};
+use std::{char, error, time::{Duration, Instant}};
 
 /// Application result type.
 pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
@@ -11,8 +10,6 @@ pub struct App {
     /// Is the application running?
     pub running: bool,
     pub input: String,
-    pub second_line: String,
-    pub third_line: String,
     pub history: Vec<String>,
     pub show_hint: bool,
     pub last_keystroke: Instant,
@@ -23,8 +20,6 @@ impl Default for App {
         Self {
             running: true,
             input: String::new(),
-            second_line: String::new(),
-            third_line: String::new(),
             history: Vec::new(),
             show_hint: true,
             last_keystroke: Instant::now(),
@@ -64,9 +59,7 @@ impl App {
     }
 
     pub fn newline(&mut self) {
-        self.history.push(self.third_line.clone());
-        self.third_line = self.second_line.clone();
-        self.second_line = self.input.clone();
+        self.history.push(self.input.clone());
         self.input = String::from("");
     }
 
@@ -76,13 +69,8 @@ impl App {
 
         // Check if the length exceeds or equals the max limit
         if self.input.len() > MAX_LINE_LENGTH {
-            // Perform word wrapping
-            let (line_to_print, wrapped_word) = word_wrap(&self.input);
-
-            // Shift the lines and update accordingly
-            self.history.push(self.third_line.clone());
-            self.third_line = self.second_line.clone();
-            self.second_line = line_to_print.trim_end().to_string();  // Trim any trailing spaces for clean line ends
+            let (_, wrapped_word) = word_wrap(&self.input);
+            self.history.push(self.input.clone());
             self.input = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
         }
 
@@ -115,11 +103,19 @@ impl App {
     }
 
     pub fn quit(&mut self) {
-        self.history.push(self.third_line.clone());
-        self.history.push(self.second_line.clone());
-        self.history.push(self.input.clone());
+        if !self.input.is_empty() {
+            self.history.push(self.input.clone());
+        }
 
         self.running = false;
+    }
+
+    pub fn latest_line(&self) -> String {
+        self.history.get(self.history.len().wrapping_sub(1)).cloned().unwrap_or_default()
+    }
+
+    pub fn second_latest_line(&self) -> String {
+        self.history.get(self.history.len().wrapping_sub(2)).cloned().unwrap_or_default()
     }
 }
 
@@ -279,7 +275,7 @@ mod tests {
         app.add_character('g');
         app.add_character('e');
         app.add_character('t');
-        assert_eq!(app.second_line, "this is a long line that will");
+        assert_eq!(app.latest_line(), "this is a long line that will");
         assert_eq!(app.input, "get");
     }
 
@@ -321,9 +317,8 @@ mod tests {
         app.add_character('.');
         app.add_character(' ');
              
-        assert_eq!(app.second_line, "Welcome to your new text editor.");
+        assert_eq!(app.latest_line(), "Welcome to your new text editor.");
         assert_eq!(app.input, "");
     }
-
 
 }

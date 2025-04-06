@@ -20,21 +20,6 @@ pub struct App {
 
 impl Default for App {
     fn default() -> Self {
-        let args: Vec<String> = env::args().collect();
-        if args.len() > 1 {
-            // let file_path = &args[1];
-
-            return Self {
-                running: true,
-                input: String::new(),
-                second_line: String::new(),
-                third_line: String::new(),
-                history: Vec::new(),
-                show_hint: true,
-                last_keystroke: Instant::now(),
-            }
-        }
-
         Self {
             running: true,
             input: String::new(),

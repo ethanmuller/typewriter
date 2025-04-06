@@ -3,10 +3,15 @@ use typewriter::event::{Event, EventHandler};
 use typewriter::handler::handle_key_events;
 use typewriter::tui::Tui;
 use std::io;
+use std::env;
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
+use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
 
 fn main() -> AppResult<()> {
+
     // Create an application.
     let mut app = App::new();
 
@@ -33,8 +38,22 @@ fn main() -> AppResult<()> {
     // Exit the user interface.
     tui.exit()?;
 
-    let output = app.history.join("\n");
-    println!("{}", output);
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 1 {
+        let output_file_path = &args[1];
+        let output = app.history.join("\n");
+
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(output_file_path)?;
+
+        writeln!(file, "{}", output)?;
+        println!("Text saved in {}", output_file_path);
+    } else {
+        let output = app.history.join("\n");
+        println!("{}", output);
+    }
 
     Ok(())
 }

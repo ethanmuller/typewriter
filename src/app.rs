@@ -75,8 +75,8 @@ impl App {
 
         // Check if the length exceeds or equals the max limit
         if self.input.len() > MAX_LINE_LENGTH {
-            let (_, wrapped_word) = word_wrap(&self.input);
-            self.history.push(self.input.clone());
+            let (latest_line, wrapped_word) = word_wrap(&self.input);
+            self.history.push(latest_line);
             self.input = wrapped_word.trim_start().to_string(); // Trim leading spaces for clean starts
         }
 

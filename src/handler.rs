@@ -25,6 +25,9 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
             app.last_keystroke = Instant::now();
         }
         KeyCode::Char(c) => {
+            app.display_hints = false;
+            app.last_keystroke = Instant::now();
+
             if c == 'u' && key_event.modifiers.contains(KeyModifiers::CONTROL) {
                 app.clear_input();
                 return Ok(())
@@ -33,9 +36,11 @@ pub fn handle_key_events(key_event: KeyEvent, app: &mut App) -> AppResult<()> {
                 app.delete_last_character();
                 return Ok(())
             }
+            if c == 'w' && key_event.modifiers.contains(KeyModifiers::CONTROL) {
+                app.delete_last_word();
+                return Ok(())
+            }
             app.add_character(c);  // Add character to input buffer
-            app.display_hints = false;
-            app.last_keystroke = Instant::now();
         }
         _ => {}
     }

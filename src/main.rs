@@ -11,8 +11,15 @@ use clap::Parser;
 
 #[derive(Parser, Debug)]
 #[command(name = "typewriter")]
-#[command(about = "A virtual typewriter built for focus and flow", long_about = None)]
+#[command(about = "
+
+A virtual typewriter built for focus and flow
+
+If no [FILE] is supplied, your writing will be
+echoed back to you when you exit.", long_about =
+None)]
 struct Cli {
+    // Disable the hint text
     #[arg(long)]
     disable_hints: bool,
 

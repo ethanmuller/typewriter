@@ -23,6 +23,14 @@ struct Cli {
     #[arg(long)]
     disable_hints: bool,
 
+    // Write or append to a markdown file named after today's date
+    #[arg(short, long)]
+    today: bool,
+
+    // Output directory
+    #[arg(short, long)]
+    dir: string,
+
     #[arg(value_name = "FILE")]
     file: Option<String>,
 }
